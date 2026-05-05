@@ -38,10 +38,10 @@
 
 ### 2.4 多引擎 TTS 语音合成
 
-- **Bert-VITS2**：高桥李依微调版，还原高木同学标志性的声线（本地 Python 服务）。
-- **Edge TTS**：微软 Edge 浏览器 TTS 引擎，轻量快速。
+- **ElevenLabs**：主要 TTS 引擎，使用 `eleven_multilingual_v2` 多语言模型，通过本地 Python 代理服务器调用 ElevenLabs API，支持 Web Audio API 实时口型同步。
+- **Edge TTS**：微软 Edge TTS 服务，提供高质量日语女声（Nanami、Mayu 等），轻量快速。
 - **Aliyun TTS**：阿里云语音合成服务，高质量中文语音。
-- **Browser TTS**：浏览器原生 SpeechSynthesis API，零依赖。
+- **Browser TTS**：浏览器原生 SpeechSynthesis API，零依赖备用方案。
 - **Japanese TTS**：日语语音合成引擎。
 
 ---
@@ -55,13 +55,13 @@
 | 前端框架 | Vue 3 + Vite + Pinia | 响应式体验、状态管理、高效开发 |
 | 形象渲染 | PixiJS 6.5 + pixi-live2d-display | Live2D Cubism 模型渲染与交互 |
 | 逻辑大脑 | GPT-4o / Claude 3.5 / 通义千问 | 多 LLM 适配器，支持运行时切换 |
-| 语音合成 | Bert-VITS2 / Edge TTS / Aliyun TTS | 多引擎 TTS，按需选择 |
+| 语音合成 | ElevenLabs / Edge TTS / Aliyun TTS | 多引擎 TTS，ElevenLabs 为主力，按需切换 |
 | 后端服务 | Express.js (Node) + Flask (Python) | Node 处理前端服务，Python 处理 TTS 推理 |
 
 ### 3.2 部署架构
 
 - **前端**：Vite 开发服务器 / 静态构建部署
-- **TTS 后端**：Python Flask 服务（Bert-VITS2 推理）
+- **TTS 后端**：Python Flask 服务（ElevenLabs API 代理）
 - **本地存储**：localStorage 记录 API Key、交互历史、用户偏好
 - **通信协议**：HTTP REST API（TTS 服务）、流式 SSE（LLM 对话）
 
@@ -96,7 +96,7 @@ project-takagi/
 │   │   │   ├── EyeTracker.js        # 视线追踪
 │   │   │   └── LipSyncManager.js    # 口型同步管理器
 │   │   ├── tts/
-│   │   │   ├── BertVITS2Engine.js   # Bert-VITS2 语音引擎
+│   │   │   ├── BertVITS2Engine.js   # ElevenLabs TTS 引擎（文件名沿用旧名）
 │   │   │   ├── EdgeTTSEngine.js     # Edge TTS 引擎
 │   │   │   ├── AliyunTTSEngine.js   # 阿里云 TTS 引擎
 │   │   │   ├── BrowserTTSEngine.js  # 浏览器原生 TTS
@@ -123,9 +123,9 @@ project-takagi/
 │   │   └── haru_greeter_t03.*       # 辅助模型
 │   ├── config/character_prompt.txt  # 角色提示词
 │   └── live2dcubismcore.min.js      # Live2D Cubism Core
-├── bert-vits2-server/               # Python TTS 后端
-│   ├── server.py                    # Flask 服务入口
-│   ├── tts_engine.py                # TTS 推理引擎
+├── bert-vits2-server/               # Python TTS 后端（ElevenLabs 代理）
+│   ├── server.py                    # Flask 服务入口（ElevenLabs API 代理）
+│   ├── tts_engine.py                # ElevenLabs TTS 引擎封装
 │   ├── requirements.txt             # Python 依赖
 │   └── audio_cache/                 # 音频缓存目录
 ├── config/
@@ -150,7 +150,7 @@ project-takagi/
   │   ├→ MemorySystem (上下文记忆)
   │   └→ Adapter (GPT/Claude/Qwen)
   ├→ TTSEngine (语音合成)
-  │   └→ BertVITS2 / Edge / Aliyun / Browser
+  │   └→ ElevenLabs / Edge / Aliyun / Browser
   ├→ Live2DManager (模型动画)
   │   ├→ LipSyncManager (口型同步)
   │   ├→ EyeTracker (视线追踪)
@@ -181,7 +181,7 @@ npm install
 npm run dev
 ```
 
-### TTS 后端启动（可选，仅 Bert-VITS2）
+### TTS 后端启动（可选，ElevenLabs 语音合成）
 
 ```bash
 cd bert-vits2-server
@@ -195,6 +195,7 @@ python server.py
 - OpenAI API Key（GPT-4o）
 - Anthropic API Key（Claude 3.5）
 - 通义千问 API Key
+- ElevenLabs API Key（语音合成，配置在 `bert-vits2-server/.env`）
 
 ---
 
